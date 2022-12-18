@@ -11,11 +11,8 @@ import time
 BASE = "http://127.0.0.1:5000/"
 
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-
 driver.get("https://www.youtube.com/")
 driver.maximize_window()
-
-
 
 trending = driver.find_element("link text", "Trending")
 trending.click()
@@ -43,18 +40,16 @@ try:
         video_views = views_wrapper.find_element("tag name", "span")
         row["views"] = video_views.text
 
+        video_rows.append(row)
 
-        """ print()
+        """ 
+        print()
         print(video_title.text)
         print(channel_title.text)
         print(video_views.text)
-        print() """
-
-        video_rows.append(row)
-
+        print() 
+        """
         
-
-
 
     bottomContent = driver.find_element("xpath", "/html/body/ytd-app/div[1]/ytd-page-manager/ytd-browse[2]/ytd-two-column-browse-results-renderer/div[1]/ytd-section-list-renderer/div[2]/ytd-item-section-renderer[5]/div[3]/ytd-shelf-renderer/div[1]/div[2]")
     bottomVideos = bottomContent.find_elements("tag name", "ytd-video-renderer")
@@ -72,25 +67,23 @@ try:
         video_views = views_wrapper.find_element("tag name", "span")
         row["views"] = video_views.text
 
+        video_rows.append(row)
 
-        """ print()
+        """
+         print()
         print(video_title.text)
         print(channel_title.text)
         print(video_views.text)
-        print() """
+        print()
+        """
 
-        video_rows.append(row)
-    
-
+        
     for row in range(len(video_rows)):
         response = requests.put(BASE + "video/", video_rows[row])
         print(response)
 
 except:
     print("ERROR!")
-
-
-
 
 driver.quit()
 
