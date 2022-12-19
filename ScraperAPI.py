@@ -21,8 +21,11 @@ api = Api(app)
 
 video_put_args = reqparse.RequestParser()
 video_put_args.add_argument("name", type=str, help="Name of the video is required", required=True)
-video_put_args.add_argument("channel", type=str, help="Channel on the video is required", required=True)
 video_put_args.add_argument("views", type=str, help="Views of the video is required", required=True)
+video_put_args.add_argument("likes", type=str, help="Likes of the video is required", required=True)
+video_put_args.add_argument("channel", type=str, help="Channel of the video is required", required=True)
+video_put_args.add_argument("subscribers", type=str, help="Channel Subscribers are required", required=True)
+
 
 
 video_update_args = reqparse.RequestParser()
@@ -45,7 +48,7 @@ class Video(Resource):
     def get(self):
         args = video_get_args.parse_args()
 
-        mycursor.execute("SELECT * FROM ConnectTest WHERE name = %s", [args['name']])
+        mycursor.execute("SELECT * FROM InfoTest WHERE name = %s", [args['name']])
 
         for x in mycursor:
             print(x)
@@ -57,7 +60,7 @@ class Video(Resource):
     def put(self):
         args = video_put_args.parse_args()
         
-        mycursor.execute("INSERT INTO ConnectTest (name, channel, views) VALUES(%s,%s,%s)", (args['name'], args['channel'], args['views']))
+        mycursor.execute("INSERT INTO InfoTest (name, views, likes, channel, subscribers) VALUES(%s,%s,%s,%s,%s)", (args['name'], args['views'], args['likes'], args['channel'], args['subscribers']))
         
         db.commit()
         return '', 201
