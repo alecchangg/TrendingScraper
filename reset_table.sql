@@ -1,0 +1,4 @@
+DELETE FROM ConnectTest
+WHERE video_key<1000;
+
+ALTER TABLE ConnectTest AUTO_INCREMENT = 1;

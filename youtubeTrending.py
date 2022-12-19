@@ -24,7 +24,7 @@ try:
     all_videos = driver.find_elements("tag name", "ytd-video-renderer")
     all_videos = all_videos[:48]
 
-    video_rows = []
+    #video_rows = []
 
     for video in all_videos:
 
@@ -42,12 +42,16 @@ try:
         video_views = views_wrapper.find_element("tag name", "span")
         row["views"] = video_views.text
 
-        video_rows.append(row)
+        response = requests.put(BASE + "video/", row)
+        print(response)
+        #video_rows.append(row)
+
+
         
 
-    for row in range(len(video_rows)):
+    """ for row in range(len(video_rows)):
         response = requests.put(BASE + "video/", video_rows[row])
-        print(response)
+        print(response) """
 
 except:
     print("ERROR!")
