@@ -27,7 +27,6 @@ except:
 all_videos = driver.find_elements("tag name", "ytd-video-renderer")
 all_videos = all_videos[:48]
 
-#video_rows = []
 
 for video in all_videos:
 
@@ -45,6 +44,7 @@ for video in all_videos:
     video_views = views_wrapper.find_element("tag name", "span")
     row["views"] = video_views.text
 
+
     video_title.click()
     try:
         metadata = WebDriverWait(driver, 10).until(
@@ -52,9 +52,9 @@ for video in all_videos:
         )
     except:
         print("NEXT ERROR")
-    
     time.sleep(1)
     
+
     topRow = metadata.find_element("id", "top-row")   
     video_likes = topRow.find_element("xpath", '//*[@id="segmented-like-button"]/ytd-toggle-button-renderer/yt-button-shape/button/div[2]/span')
     row["likes"] = video_likes.text
@@ -67,8 +67,8 @@ for video in all_videos:
     response = requests.put(BASE + "video/", row)
     print(response)
 
-    driver.back()
 
+    driver.back()
     try:
         trendingImage =  WebDriverWait(driver,10).until(
             EC.presence_of_element_located((By.XPATH, "/html/body/ytd-app/div[1]/ytd-page-manager/ytd-browse[2]/div[3]/ytd-c4-tabbed-header-renderer/tp-yt-app-header-layout/div/tp-yt-app-header/div[2]/div[2]/div/div[1]/yt-img-shadow/img"))
@@ -76,18 +76,6 @@ for video in all_videos:
     except:
         print("BACK PAGE ERROR!")
     time.sleep(0.5)
-
-
-    
-    #video_rows.append(row)
-
-
-    
-
-""" for row in range(len(video_rows)):
-    response = requests.put(BASE + "video/", video_rows[row])
-    print(response) """
-
 
 
 driver.quit()

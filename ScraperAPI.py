@@ -10,7 +10,7 @@ db = mysql.connector.connect(
     host = "localhost",
     user = "root",
     passwd = hw,
-    database = "testDB"
+    database = "staging"
 )
 
 mycursor = db.cursor()
@@ -26,41 +26,42 @@ video_put_args.add_argument("likes", type=str, help="Likes of the video is requi
 video_put_args.add_argument("channel", type=str, help="Channel of the video is required", required=True)
 video_put_args.add_argument("subscribers", type=str, help="Channel Subscribers are required", required=True)
 
-
-
-video_update_args = reqparse.RequestParser()
-video_update_args.add_argument("name", type=str, help="Name of the video ais required")
-video_update_args.add_argument("views", type=int, help="Views of the video is required")
-video_update_args.add_argument("likes", type=int, help="Likes on the video is required")
-
 video_get_args = reqparse.RequestParser()
-video_get_args.add_argument("name", type = str, help = "Name is required...", required = True)
+
+
 
 resource_fields = {
-    'id': fields.Integer,
-    'name': fields.String,
-    'views': fields.Integer,
-    'likes': fields.Integer
+    'data': fields.List(fields.List(fields.String))
 }
+
 
 class Video(Resource):
     @marshal_with(resource_fields)
     def get(self):
-        args = video_get_args.parse_args()
+        #args = video_get_args.parse_args()
 
-        mycursor.execute("SELECT * FROM InfoTest WHERE name = %s", [args['name']])
+        mycursor.execute("SELECT * FROM StagingArea")
+        
+        rows = []
 
         for x in mycursor:
-            print(x)
+            row = []
+            for i in x:
+                i = str(i)
+                row.append(i)
+            rows.append(row)
 
-        
-        return '', 200
+        jsonData = {}
+        jsonData["data"] = rows
+        print(jsonData)
+
+        return jsonData, 200
 
     @marshal_with(resource_fields)
     def put(self):
         args = video_put_args.parse_args()
         
-        mycursor.execute("INSERT INTO InfoTest (name, views, likes, channel, subscribers) VALUES(%s,%s,%s,%s,%s)", (args['name'], args['views'], args['likes'], args['channel'], args['subscribers']))
+        mycursor.execute("INSERT INTO StagingArea (name, views, likes, channel, subscribers) VALUES(%s,%s,%s,%s,%s)", (args['name'], args['views'], args['likes'], args['channel'], args['subscribers']))
         
         db.commit()
         return '', 201
