@@ -40,7 +40,7 @@ class Video(Resource):
     def get(self):
         #args = video_get_args.parse_args()
 
-        mycursor.execute("SELECT * FROM StagingArea")
+        mycursor.execute("SELECT * FROM StagingAreaIn")
         
         rows = []
 
@@ -61,7 +61,7 @@ class Video(Resource):
     def put(self):
         args = video_put_args.parse_args()
         
-        mycursor.execute("INSERT INTO StagingArea (name, views, likes, channel, subscribers) VALUES(%s,%s,%s,%s,%s)", (args['name'], args['views'], args['likes'], args['channel'], args['subscribers']))
+        mycursor.execute("INSERT INTO StagingAreaIn (name, views, likes, channel, subscribers) VALUES(%s,%s,%s,%s,%s)", (args['name'], args['views'], args['likes'], args['channel'], args['subscribers']))
         
         db.commit()
         return '', 201
