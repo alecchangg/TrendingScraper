@@ -3,8 +3,8 @@ import pandas as pd
 
 BASE = "http://127.0.0.1:5000/"
 
-#get request to Staging Area Database
-response = requests.get(BASE + "video/")
+#get request API for data in StagingAreaIN
+response = requests.get(BASE + "video/staging/in/")
 rep = response.json()
 data = rep['data']
 
@@ -37,5 +37,16 @@ for index, row in df.iterrows():
 
     #reformat rank column
     row['rank'] = int(row['rank'])
+
+    #converts dataframe row into JSON format
+    jsonData = {}
+    jsonData['name'] = row['name']
+    jsonData['views'] = row['views']
+    jsonData['likes'] = row['likes']
+    jsonData['channel'] = row['channel']
+    jsonData['subscribers'] = row['subscribers']
+
+    #put request to API to load into StagingAreaOUT 
+    response = requests.put(BASE + "video/staging/out/", jsonData)
 
 print(df)   
