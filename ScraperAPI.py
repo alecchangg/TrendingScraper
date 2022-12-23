@@ -10,6 +10,7 @@ app = Flask(__name__)
 api = Api(app)
 
 
+
 stagingIn = reqparse.RequestParser()
 stagingIn.add_argument("name", type=str, help="Name of the video is required", required=True)
 stagingIn.add_argument("views", type=str, help="Views of the video is required", required=True)
@@ -18,37 +19,30 @@ stagingIn.add_argument("channel", type=str, help="Channel of the video is requir
 stagingIn.add_argument("subscribers", type=str, help="Channel Subscribers are required", required=True)
 
 stagingOut = reqparse.RequestParser()
-#stagingOut.add_argument("rank", type=int, help="Rank of the video is required", required=True)
 stagingOut.add_argument("name", type=str, help="Name of the video is required", required=True)
 stagingOut.add_argument("views", type=int, help="Views of the video is required", required=True)
 stagingOut.add_argument("likes", type=int, help="Likes of the video is required", required=True)
 stagingOut.add_argument("channel", type=str, help="Channel of the video is required", required=True)
 stagingOut.add_argument("subscribers", type=int, help="Channel Subscribers are required", required=True)
 
-video_get_args = reqparse.RequestParser()
-
-
-
-resource_fields = {
+staging_fields = {
     'data': fields.List(fields.List(fields.String))
 }
 
-
-class Video(Resource):
-    @marshal_with(resource_fields)
-    def get(self, location, io):
-
+class Staging(Resource):
+    @marshal_with(staging_fields)
+    def get(self, io):
         db = mysql.connector.connect(
             host = "localhost",
             user = "root",
             passwd = hw,
-            database = location
+            database = "staging"
         )
         mycursor = db.cursor()
 
-        if location == "staging" and io == "in":
+        if io == "in":
             mycursor.execute("SELECT * FROM StagingAreaIn")
-        elif location == "staging" and io == "out":
+        elif io == "out":
             mycursor.execute("SELECT * FROM StagingAreaOut")
         
         rows = []
@@ -65,14 +59,14 @@ class Video(Resource):
 
         return jsonData, 200
 
-    @marshal_with(resource_fields)
-    def put(self, location, io):
+    @marshal_with(staging_fields)
+    def put(self, io):
 
         db = mysql.connector.connect(
             host = "localhost",
             user = "root",
             passwd = hw,
-            database = location
+            database = "staging"
         )
         mycursor = db.cursor()
 
@@ -87,35 +81,43 @@ class Video(Resource):
         db.commit()
         return '', 201
 
-    @marshal_with(resource_fields)
+    @marshal_with(staging_fields)
     def patch(self):
-        args = video_update_args.parse_args()
-        result = VideoModel.query.filter_by(id=video_id).first()
-        if not result:
-            abort(404, message="Video not found...")
-
-        if args['name']:
-            result.name = args['name']
-        if args['views']:
-            result.views = args['views']
-        if args['likes']:
-            result.likes = args['likes']
-
-        db.session.commit()
-
-        return result
+        pass
 
     def delete(self):
-        result = VideoModel.query.filter_by(id=video_id).first()
-        if not result:
-            abort(404, message="Video not found...")
-
-        db.session.delete(result)
-        db.session.commit()
-
         return '', 204
 
-api.add_resource(Video, "/video/<string:location>/<string:io>/")
+
+
+dim_channel = reqparse.RequestParser()
+dim_channel.add_argument("name", type=str, help="Channel requires a name", required=True)
+dim_channel.add_argument("subscribers", type=int, help="Channel requires subscribers", required=True)
+
+class Warehouse(Resource):
+    def get(self, location):
+        return {'data': "fake data"}
+
+    def put(self, location):
+        db = mysql.connector.connect(
+            host = "localhost",
+            user = "root",
+            passwd = hw,
+            database = "warehouse"
+        )
+        mycursor = db.cursor()
+
+        if location == "channel":
+            args = dim_channel.parse_args()
+            mycursor.execute("INSERT INTO dim_channel (name, subscribers) VALUES(%s,%s)", (args['name'], args['subscribers']))
+
+        db.commit()
+        return '', 201
+
+
+
+api.add_resource(Staging, "/staging/<string:io>/")
+api.add_resource(Warehouse, "/warehouse/<string:location>/")
 
 if __name__ == "__main__":
     app.run(debug=True)

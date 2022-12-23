@@ -64,7 +64,7 @@ for video in all_videos:
     row["subscribers"] = channel_subs.text
     
 
-    response = requests.put(BASE + "video/", row)
+    response = requests.put(BASE + "staging/in/", row)
     print(response)
 
 
