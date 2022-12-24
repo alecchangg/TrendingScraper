@@ -71,10 +71,10 @@ class Staging(Resource):
         mycursor = db.cursor()
 
         args = stagingIn.parse_args()
-        if location == "staging" and io == "in":
+        if io == "in":
             args = stagingIn.parse_args()
             mycursor.execute("INSERT INTO StagingAreaIn (name, views, likes, channel, subscribers) VALUES(%s,%s,%s,%s,%s)", (args['name'], args['views'], args['likes'], args['channel'], args['subscribers']))
-        elif location == "staging" and io == "out":
+        elif io == "out":
             args = stagingOut.parse_args()
             mycursor.execute("INSERT INTO StagingAreaOut (name, views, likes, channel, subscribers) VALUES(%s,%s,%s,%s,%s)", (args['name'], args['views'], args['likes'], args['channel'], args['subscribers']))
 
