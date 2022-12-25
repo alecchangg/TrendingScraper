@@ -15,10 +15,10 @@ df = pd.DataFrame(data, columns = ['rank', 'name', 'views', 'likes', 'channel', 
 channel_df = pd.DataFrame().assign(name = df['channel'], subscribers = df['subscribers'])
 
 for index, row in df.iterrows():
-    response = requests.get(BASE + "warehouse/channel/", {'name': row['name']})
+    response = requests.get(BASE + "warehouse/channel/", {'name': row['channel']})
     if response.json()['data'] == []:
         jsonData = {}
-        jsonData['name'] = row['name']
+        jsonData['name'] = row['channel']
         jsonData['subscribers'] = row['subscribers']
         response = requests.put(BASE + "warehouse/channel/", jsonData)
     else:
