@@ -4,7 +4,7 @@ from datetime import date
 
 BASE = "http://127.0.0.1:5000/"
 
-today = date.today()
+
 
 response = requests.get(BASE + "staging/out/")
 data = response.json()["data"]
@@ -27,6 +27,10 @@ for index, row in df.iterrows():
         response = requests.patch(BASE + "warehouse/channel/", {'key': channel_key, 'subscribers': subscribers})
 
 
+today = date.today().strftime("%Y-%m-%d")
+response = requests.get(BASE + "warehouse/date/", {'date': today})
+if response.json()['data'] == []:
+    response = requests.put(BASE + "warehouse/date/", {'date': today})
 
 print(channel_df)
 

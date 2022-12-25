@@ -1,5 +1,6 @@
 from flask import Flask, request
 from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
+from datetime import date
 import mysql.connector
 
 hw = ""
@@ -95,6 +96,10 @@ dim_channel.add_argument("key", type=int)
 dim_channel.add_argument("name", type=str)
 dim_channel.add_argument("subscribers", type=int)
 
+dim_date = reqparse.RequestParser()
+dim_date.add_argument("key", type=int)
+dim_date.add_argument("date", type=str)
+
 class Warehouse(Resource):
     def get(self, location):
         db = mysql.connector.connect(
@@ -104,21 +109,35 @@ class Warehouse(Resource):
             database = "warehouse"
         )
         mycursor = db.cursor()
+        rows = []
 
         if location == "channel":
             args = dim_channel.parse_args()
             mycursor.execute("SELECT * FROM dim_channel WHERE name = %s", [args['name']])
+            for x in mycursor:
+                row = []
+                for i in x:
+                    row.append(i)
+                rows.append(row)
+        elif location == "date":
+            print("here")
+            args = dim_date.parse_args()
+            print("here2")
+            mycursor.execute("SELECT * FROM dim_date WHERE date = %s", [args['date']])
+            for x in mycursor:
+                row = []
+                for i in x:
+                    row.append(i)
+                row[1] = row[1].strftime("%Y-%m-%d")
+                rows.append(row)
         
-        rows = []
-        for x in mycursor:
-            row = []
-            for i in x:
-                row.append(i)
-            rows.append(row)
+        
+        
+        
         
         jsonData = {}
         jsonData['data'] = rows
-
+        print(jsonData)
         return jsonData, 200
 
     def put(self, location):
@@ -130,9 +149,13 @@ class Warehouse(Resource):
         )
         mycursor = db.cursor()
 
+        print(location)
         if location == "channel":
             args = dim_channel.parse_args()
             mycursor.execute("INSERT INTO dim_channel (name, subscribers) VALUES(%s,%s)", (args['name'], args['subscribers']))
+        elif location == "date":
+            args = dim_date.parse_args()
+            mycursor.execute("INSERT INTO dim_date (date) VALUES(%s)", [args['date']])
 
         db.commit()
         return '', 201

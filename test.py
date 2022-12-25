@@ -4,5 +4,6 @@ from datetime import date
 
 BASE = "http://127.0.0.1:5000/"
 
-response = requests.get(BASE + "warehouse/channel/", {'name': "test data"})
+today = date.today().strftime("%Y-%m-%d")
+response = requests.get(BASE + "warehouse/date/", {'date': today})
 print(response.json())
