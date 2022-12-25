@@ -91,12 +91,35 @@ class Staging(Resource):
 
 
 dim_channel = reqparse.RequestParser()
-dim_channel.add_argument("name", type=str, help="Channel requires a name", required=True)
-dim_channel.add_argument("subscribers", type=int, help="Channel requires subscribers", required=True)
+dim_channel.add_argument("key", type=int)
+dim_channel.add_argument("name", type=str)
+dim_channel.add_argument("subscribers", type=int)
 
 class Warehouse(Resource):
     def get(self, location):
-        return {'data': "fake data"}
+        db = mysql.connector.connect(
+            host = "localhost",
+            user = "root",
+            passwd = hw,
+            database = "warehouse"
+        )
+        mycursor = db.cursor()
+
+        if location == "channel":
+            args = dim_channel.parse_args()
+            mycursor.execute("SELECT * FROM dim_channel WHERE name = %s", [args['name']])
+        
+        rows = []
+        for x in mycursor:
+            row = []
+            for i in x:
+                row.append(i)
+            rows.append(row)
+        
+        jsonData = {}
+        jsonData['data'] = rows
+
+        return jsonData, 200
 
     def put(self, location):
         db = mysql.connector.connect(
@@ -113,6 +136,20 @@ class Warehouse(Resource):
 
         db.commit()
         return '', 201
+
+    def patch(self, location):
+        db = mysql.connector.connect(
+            host = "localhost",
+            user = "root",
+            passwd = hw,
+            database = "warehouse"
+        )
+        mycursor = db.cursor()
+
+        args = dim_channel.parse_args()
+        mycursor.execute("UPDATE dim_channel SET subscribers = %s WHERE channel_key = %s", (args['subscribers'], args['key']))
+
+        db.commit()
 
 
 

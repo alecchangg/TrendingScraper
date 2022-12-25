@@ -1,4 +1,4 @@
-DELETE FROM InfoTest
-WHERE video_key<1000;
+DELETE FROM warehouse.dim_channel
+WHERE channel_key<1000;
 
-ALTER TABLE InfoTest AUTO_INCREMENT = 1;
+ALTER TABLE warehouse.dim_channel AUTO_INCREMENT = 1;
