@@ -33,44 +33,25 @@ staging_fields = {
 class Staging(Resource):
     @marshal_with(staging_fields)
     def get(self, io):
-        db = mysql.connector.connect(
-            host = "localhost",
-            user = "root",
-            passwd = hw,
-            database = "staging"
-        )
-        mycursor = db.cursor()
-
+        db, mycursor = self.connect()
         if io == "in":
             mycursor.execute("SELECT * FROM StagingAreaIn")
         elif io == "out":
             mycursor.execute("SELECT * FROM StagingAreaOut")
-        
         rows = []
-
         for x in mycursor:
             row = []
             for i in x:
                 i = str(i)
                 row.append(i)
             rows.append(row)
-
         jsonData = {}
         jsonData["data"] = rows
-
         return jsonData, 200
 
     @marshal_with(staging_fields)
     def put(self, io):
-
-        db = mysql.connector.connect(
-            host = "localhost",
-            user = "root",
-            passwd = hw,
-            database = "staging"
-        )
-        mycursor = db.cursor()
-
+        db, mycursor = self.connect()
         args = stagingIn.parse_args()
         if io == "in":
             args = stagingIn.parse_args()
@@ -78,7 +59,6 @@ class Staging(Resource):
         elif io == "out":
             args = stagingOut.parse_args()
             mycursor.execute("INSERT INTO StagingAreaOut (name, views, likes, channel, subscribers) VALUES(%s,%s,%s,%s,%s)", (args['name'], args['views'], args['likes'], args['channel'], args['subscribers']))
-
         db.commit()
         return '', 201
 
@@ -88,6 +68,16 @@ class Staging(Resource):
 
     def delete(self):
         return '', 204
+
+    def connect(self):
+        db = mysql.connector.connect(
+            host = "localhost",
+            user = "root",
+            passwd = hw,
+            database = "staging"
+        )
+        mycursor = db.cursor()
+        return db, mycursor
 
 
 
@@ -102,15 +92,8 @@ dim_date.add_argument("date", type=str)
 
 class Warehouse(Resource):
     def get(self, location):
-        db = mysql.connector.connect(
-            host = "localhost",
-            user = "root",
-            passwd = hw,
-            database = "warehouse"
-        )
-        mycursor = db.cursor()
+        db, mycursor = self.connect()
         rows = []
-
         if location == "channel":
             args = dim_channel.parse_args()
             mycursor.execute("SELECT * FROM dim_channel WHERE name = %s", [args['name']])
@@ -120,9 +103,7 @@ class Warehouse(Resource):
                     row.append(i)
                 rows.append(row)
         elif location == "date":
-            print("here")
             args = dim_date.parse_args()
-            print("here2")
             mycursor.execute("SELECT * FROM dim_date WHERE date = %s", [args['date']])
             for x in mycursor:
                 row = []
@@ -130,37 +111,29 @@ class Warehouse(Resource):
                     row.append(i)
                 row[1] = row[1].strftime("%Y-%m-%d")
                 rows.append(row)
-        
-        
-        
-        
-        
         jsonData = {}
         jsonData['data'] = rows
-        print(jsonData)
         return jsonData, 200
 
     def put(self, location):
-        db = mysql.connector.connect(
-            host = "localhost",
-            user = "root",
-            passwd = hw,
-            database = "warehouse"
-        )
-        mycursor = db.cursor()
-
-        print(location)
+        db, mycursor = self.connect()
         if location == "channel":
             args = dim_channel.parse_args()
             mycursor.execute("INSERT INTO dim_channel (name, subscribers) VALUES(%s,%s)", (args['name'], args['subscribers']))
         elif location == "date":
             args = dim_date.parse_args()
             mycursor.execute("INSERT INTO dim_date (date) VALUES(%s)", [args['date']])
-
         db.commit()
         return '', 201
 
     def patch(self, location):
+        db, mycursor = self.connect()
+        if location == "channel":
+            args = dim_channel.parse_args()
+            mycursor.execute("UPDATE dim_channel SET subscribers = %s WHERE channel_key = %s", (args['subscribers'], args['key']))
+        db.commit()
+
+    def connect(self):
         db = mysql.connector.connect(
             host = "localhost",
             user = "root",
@@ -168,12 +141,7 @@ class Warehouse(Resource):
             database = "warehouse"
         )
         mycursor = db.cursor()
-
-        args = dim_channel.parse_args()
-        mycursor.execute("UPDATE dim_channel SET subscribers = %s WHERE channel_key = %s", (args['subscribers'], args['key']))
-
-        db.commit()
-
+        return db, mycursor
 
 
 api.add_resource(Staging, "/staging/<string:io>/")
