@@ -3,15 +3,16 @@ from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
 from datetime import date
 import mysql.connector
 
+#reads config file for database password
 hw = ""
 with open("hw.config") as file:
     hw = file.read()
 
+#create flask api
 app = Flask(__name__)
 api = Api(app)
 
-
-
+#creates input parsers for staging resource
 stagingIn = reqparse.RequestParser()
 stagingIn.add_argument("name", type=str, help="Name of the video is required", required=True)
 stagingIn.add_argument("views", type=str, help="Views of the video is required", required=True)
@@ -26,18 +27,20 @@ stagingOut.add_argument("likes", type=int, help="Likes of the video is required"
 stagingOut.add_argument("channel", type=str, help="Channel of the video is required", required=True)
 stagingOut.add_argument("subscribers", type=int, help="Channel Subscribers are required", required=True)
 
-staging_fields = {
-    'data': fields.List(fields.List(fields.String))
-}
-
+#creates staging resource
 class Staging(Resource):
-    @marshal_with(staging_fields)
+
+    #get request
     def get(self, io):
         db, mycursor = self.connect()
+
+        #selects data from correct table
         if io == "in":
             mycursor.execute("SELECT * FROM StagingAreaIn")
         elif io == "out":
             mycursor.execute("SELECT * FROM StagingAreaOut")
+
+        #formats data into JSON serializable and returns
         rows = []
         for x in mycursor:
             row = []
@@ -49,9 +52,11 @@ class Staging(Resource):
         jsonData["data"] = rows
         return jsonData, 200
 
-    @marshal_with(staging_fields)
+    #put request
     def put(self, io):
         db, mycursor = self.connect()
+
+        #inserts inputted data into correct table
         args = stagingIn.parse_args()
         if io == "in":
             args = stagingIn.parse_args()
@@ -62,8 +67,11 @@ class Staging(Resource):
         db.commit()
         return '', 201
 
+    #delete request
     def delete(self, io):
         db, mycursor = self.connect()
+
+        #deletes data from correct table
         if io == "in":
             mycursor.execute("DELETE FROM stagingareain WHERE video_key < 1000")
             mycursor.execute("ALTER TABLE stagingareain AUTO_INCREMENT = 1")
@@ -73,7 +81,10 @@ class Staging(Resource):
         db.commit()
         return '', 204
 
+    #connect helper function
     def connect(self):
+
+        #connects to staging database and returns cursor
         db = mysql.connector.connect(
             host = "localhost",
             user = "root",
@@ -83,8 +94,7 @@ class Staging(Resource):
         mycursor = db.cursor()
         return db, mycursor
 
-
-
+#creates input parsers for warehouse resource
 dim_channel = reqparse.RequestParser()
 dim_channel.add_argument("key", type=int)
 dim_channel.add_argument("name", type=str)
@@ -108,9 +118,14 @@ fact_current_trending.add_argument("video", type=int)
 fact_current_trending.add_argument("channel", type=int)
 fact_current_trending.add_argument("date", type=int)
 
+#creates warehouse resource
 class Warehouse(Resource):
+
+    #get request
     def get(self, location):
         db, mycursor = self.connect()
+        
+        #selects data from correct table and formats it into JSON serializable 
         rows = []
         if location == "channel":
             args = dim_channel.parse_args()
@@ -141,8 +156,11 @@ class Warehouse(Resource):
         jsonData['data'] = rows
         return jsonData, 200
 
+    #put request
     def put(self, location):
         db, mycursor = self.connect()
+
+        #inserts inputted data into correct table
         if location == "channel":
             args = dim_channel.parse_args()
             mycursor.execute("INSERT INTO dim_channel (name, subscribers) VALUES(%s,%s)", (args['name'], args['subscribers']))
@@ -158,8 +176,11 @@ class Warehouse(Resource):
         db.commit()
         return '', 201
 
+    #patch request
     def patch(self, location):
         db, mycursor = self.connect()
+
+        #updates inputted data into correct table
         if location == "channel":
             args = dim_channel.parse_args()
             mycursor.execute("UPDATE dim_channel SET subscribers = %s WHERE channel_key = %s", (args['subscribers'], args['key']))
@@ -169,15 +190,21 @@ class Warehouse(Resource):
         db.commit()
         return '', 200
 
+    #delete request
     def delete(self, location):
         db, mycursor = self.connect()
+
+        #deletes data from correct table
         if location == "trending":
             mycursor.execute("DELETE FROM fact_current_trending WHERE trending_rank < 1000")
             mycursor.execute("ALTER TABLE fact_current_trending AUTO_INCREMENT = 1")
         db.commit()
         return '', 204
 
+    #connect helper function
     def connect(self):
+
+        #connects to warehouse database and return cursor
         db = mysql.connector.connect(
             host = "localhost",
             user = "root",
@@ -187,9 +214,10 @@ class Warehouse(Resource):
         mycursor = db.cursor()
         return db, mycursor
 
-
+#adds staging and warehouse resources to api
 api.add_resource(Staging, "/staging/<string:io>/")
 api.add_resource(Warehouse, "/warehouse/<string:location>/")
 
+#starts the api
 if __name__ == "__main__":
     app.run(debug=True)
