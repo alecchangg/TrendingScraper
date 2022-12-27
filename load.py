@@ -36,7 +36,7 @@ for index, row in df.iterrows():
     response = requests.get(BASE + "warehouse/channel/", {'name': row['channel']})
     channel_key = response.json()['data'][0][0]
 
-
+    #adds/updates video info for current row
     response = requests.get(BASE + "warehouse/video/", {'name': row['name']})
     if response.json()['data'] == []:
         jsonData = {}
