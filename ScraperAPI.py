@@ -92,6 +92,11 @@ dim_video.add_argument("channel", type=int)
 dim_video.add_argument("trending_start_date", type=int)
 dim_video.add_argument("trending_end_date", type=int)
 
+fact_current_trending = reqparse.RequestParser()
+fact_current_trending.add_argument("video", type=int)
+fact_current_trending.add_argument("channel", type=int)
+fact_current_trending.add_argument("date", type=int)
+
 class Warehouse(Resource):
     def get(self, location):
         db, mycursor = self.connect()
@@ -136,6 +141,9 @@ class Warehouse(Resource):
         elif location == "video":
             args = dim_video.parse_args()
             mycursor.execute("INSERT INTO dim_video (name, views, likes, channel, trending_start_date, trending_end_date) VALUES(%s,%s,%s,%s,%s,%s)", (args['name'], args['views'], args['likes'], args['channel'], args['trending_start_date'], args['trending_end_date']))
+        elif location == "trending":
+            args = fact_current_trending.parse_args()
+            mycursor.execute("INSERT INTO fact_current_trending (video, channel, date) VALUES(%s,%s,%s)", (args['video'], args['channel'], args['date']))
         db.commit()
         return '', 201
 
@@ -149,6 +157,13 @@ class Warehouse(Resource):
             mycursor.execute("UPDATE dim_video SET views = %s, likes = %s, trending_end_date = %s WHERE video_key = %s", (args['views'], args['likes'], args['trending_end_date'], args['key']))
         db.commit()
         return '', 200
+
+    def delete(self, location):
+        db, mycursor = self.connect()
+        if location == "trending":
+            mycursor.execute("DELETE FROM fact_current_trending WHERE trending_rank < 1000")
+            mycursor.execute("ALTER TABLE fact_current_trending AUTO_INCREMENT = 1")
+        return '', 204
 
     def connect(self):
         db = mysql.connector.connect(

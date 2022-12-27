@@ -4,6 +4,9 @@ from datetime import date
 
 BASE = "http://127.0.0.1:5000/"
 
+#resets current trending fact table in data warehouse
+response = requests.delete(BASE + "warehouse/trending/")
+
 #adds/updates the date dimension for today's date
 today = date.today().strftime("%Y-%m-%d")
 response = requests.get(BASE + "warehouse/date/", {'date': today})
@@ -17,7 +20,6 @@ data = response.json()["data"]
 pd.set_option("display.max_columns", None)
 df = pd.DataFrame(data, columns = ['rank', 'name', 'views', 'likes', 'channel', 'subscribers'])
 channel_df = pd.DataFrame().assign(name = df['channel'], subscribers = df['subscribers'])
-
 
 #iterate through each row and adds/updates dimension and fact tables
 for index, row in df.iterrows():
@@ -52,3 +54,9 @@ for index, row in df.iterrows():
         response = requests.patch(BASE + "warehouse/video/", {'key': video_key, 'views': row['views'], 'likes': row['likes'], 'trending_end_date': today_key})
     response = requests.get(BASE + "warehouse/video/", {'name': row['name']})
     video_key = response.json()['data'][0][0]
+
+    #updates current trending fact table
+    response = requests.put(BASE + "warehouse/trending/", {'video': video_key, 'channel': channel_key, 'date': today_key})
+
+    
+    
