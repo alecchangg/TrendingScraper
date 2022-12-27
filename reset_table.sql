@@ -1,4 +1,4 @@
-DELETE FROM warehouse.dim_channel
-WHERE channel_key<1000;
+DELETE FROM warehouse.dim_video
+WHERE video_key<1000;
 
-ALTER TABLE warehouse.dim_channel AUTO_INCREMENT = 1;
+ALTER TABLE warehouse.dim_video AUTO_INCREMENT = 1;

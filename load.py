@@ -33,3 +33,22 @@ for index, row in df.iterrows():
         channel_key = response.json()['data'][0][0]
         subscribers = row['subscribers']
         response = requests.patch(BASE + "warehouse/channel/", {'key': channel_key, 'subscribers': subscribers})
+    response = requests.get(BASE + "warehouse/channel/", {'name': row['channel']})
+    channel_key = response.json()['data'][0][0]
+
+
+    response = requests.get(BASE + "warehouse/video/", {'name': row['name']})
+    if response.json()['data'] == []:
+        jsonData = {}
+        jsonData['name'] = row['name']
+        jsonData['views'] = row['views']
+        jsonData['likes'] = row['likes']
+        jsonData['channel'] = channel_key
+        jsonData['trending_start_date'] = today_key
+        jsonData['trending_end_date'] = today_key
+        response = requests.put(BASE + "warehouse/video/", jsonData)
+    else:
+        video_key = response.json()['data'][0][0]
+        response = requests.patch(BASE + "warehouse/video/", {'key': video_key, 'views': row['views'], 'likes': row['likes'], 'trending_end_date': today_key})
+    response = requests.get(BASE + "warehouse/video/", {'name': row['name']})
+    video_key = response.json()['data'][0][0]
