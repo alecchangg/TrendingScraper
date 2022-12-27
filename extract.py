@@ -10,6 +10,9 @@ import time
 
 BASE = "http://127.0.0.1:5000/"
 
+#resets stagingarein table in data warehouse
+response = requests.delete(BASE + "staging/in/")
+
 #initialize chrome driver and open Youtube
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 driver.get("https://www.youtube.com/")

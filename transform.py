@@ -3,6 +3,9 @@ import pandas as pd
 
 BASE = "http://127.0.0.1:5000/"
 
+#reset stagingareaout table in data warehouse
+response = requests.get(BASE + "staging/out/")
+
 #get request API for data in StagingAreaIN
 response = requests.get(BASE + "staging/in/")
 rep = response.json()
@@ -48,5 +51,3 @@ for index, row in df.iterrows():
 
     #put request to API to load into StagingAreaOUT 
     response = requests.put(BASE + "staging/out/", jsonData)
-
-print(df)   

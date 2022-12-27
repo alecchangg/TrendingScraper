@@ -62,6 +62,17 @@ class Staging(Resource):
         db.commit()
         return '', 201
 
+    def delete(self, io):
+        db, mycursor = self.connect()
+        if io == "in":
+            mycursor.execute("DELETE FROM stagingareain WHERE video_key < 1000")
+            mycursor.execute("ALTER TABLE stagingareain AUTO_INCREMENT = 1")
+        elif io == "out":
+            mycursor.execute("DELETE FROM stagingareaout WHERE video_key < 1000")
+            mycursor.execute("ALTER TABLE stagingareaout AUTO_INCREMENT = 1")
+        db.commit()
+        return '', 204
+
     def connect(self):
         db = mysql.connector.connect(
             host = "localhost",
@@ -163,6 +174,7 @@ class Warehouse(Resource):
         if location == "trending":
             mycursor.execute("DELETE FROM fact_current_trending WHERE trending_rank < 1000")
             mycursor.execute("ALTER TABLE fact_current_trending AUTO_INCREMENT = 1")
+        db.commit()
         return '', 204
 
     def connect(self):
