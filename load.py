@@ -12,6 +12,7 @@ today = date.today().strftime("%Y-%m-%d")
 response = requests.get(BASE + "warehouse/date/", {'date': today})
 if response.json()['data'] == []:
     response = requests.put(BASE + "warehouse/date/", {'date': today})
+    response = requests.get(BASE + "warehouse/date/", {'date': today})
 today_key = response.json()['data'][0][0]
 
 #get request to staging area for new data and converts JSON serializable object to pandas dataframes

@@ -4,7 +4,7 @@ import pandas as pd
 BASE = "http://127.0.0.1:5000/"
 
 #reset stagingareaout table in data warehouse
-response = requests.get(BASE + "staging/out/")
+response = requests.delete(BASE + "staging/out/")
 
 #get request API for data in StagingAreaIN
 response = requests.get(BASE + "staging/in/")
@@ -26,10 +26,13 @@ for index, row in df.iterrows():
     row['views'] = int(float(views) * conversions[multiplier])
     
     #reformat likes column
-    likes = row['likes']
-    multiplier = likes[-1]
-    likes = likes[:-1]
-    row['likes'] = int(float(likes) * conversions[multiplier])
+    if row['likes'].isnumeric():
+        row['likes'] = int(row['likes'])
+    else:
+        likes = row['likes']
+        multiplier = likes[-1]
+        likes = likes[:-1]
+        row['likes'] = int(float(likes) * conversions[multiplier])
 
     #reformat subscriber column
     subscribers = row['subscribers']
